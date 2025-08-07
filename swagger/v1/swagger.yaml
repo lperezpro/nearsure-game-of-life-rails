@@ -1,0 +1,231 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1 - Conway's Game of Life
+  version: v1
+  description: An API for simulating Conway's Game of Life.
+paths:
+  "/api/v1/boards":
+    get:
+      summary: Lists all boards
+      tags:
+      - Boards
+      description: Returns a list of all boards currently stored in the database.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    state:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type: integer
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+                  required:
+                  - id
+                  - state
+                  - created_at
+                  - updated_at
+    post:
+      summary: Creates a board
+      tags:
+      - Boards
+      description: Creates a new board. Expects a 'state' parameter, which is a 2D
+        array of 0s and 1s.
+      parameters: []
+      responses:
+        '201':
+          description: board created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                required:
+                - id
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                board:
+                  type: object
+                  properties:
+                    state:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type: integer
+                          enum:
+                          - 0
+                          - 1
+                      example:
+                      - - 0
+                        - 1
+                        - 0
+                      - - 0
+                        - 1
+                        - 0
+                      - - 0
+                        - 1
+                        - 0
+                  required:
+                  - state
+              required:
+              - board
+  "/api/v1/boards/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Board ID
+      required: true
+      schema:
+        type: string
+    delete:
+      summary: Deletes a board
+      tags:
+      - Boards
+      description: Deletes the board specified by ID.
+      responses:
+        '204':
+          description: board deleted
+        '404':
+          description: board not found
+  "/api/v1/boards/{id}/next":
+    parameters:
+    - name: id
+      in: path
+      description: Board ID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Calculates the next state
+      tags:
+      - Boards
+      description: Calculates and returns the next single generation for the specified
+        board.
+      responses:
+        '200':
+          description: next state returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: integer
+        '404':
+          description: board not found
+  "/api/v1/boards/{id}/steps/{n}":
+    parameters:
+    - name: id
+      in: path
+      description: Board ID
+      required: true
+      schema:
+        type: string
+    - name: "n"
+      in: path
+      description: Number of steps (generations)
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Calculates state after N steps
+      tags:
+      - Boards
+      description: Calculates the state of the board after 'n' generations.
+      responses:
+        '200':
+          description: state after n steps returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: integer
+        '400':
+          description: bad request
+        '404':
+          description: board not found
+  "/api/v1/boards/{id}/final":
+    parameters:
+    - name: id
+      in: path
+      description: Board ID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Calculates the final state
+      tags:
+      - Boards
+      description: Attempts to find a final state for the board, which can be either
+        stable or oscillating.
+      responses:
+        '200':
+          description: final state returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: integer
+                  status:
+                    type: string
+                    enum:
+                    - stable
+                    - oscillating
+        '422':
+          description: final state not found
+        '404':
+          description: board not found
+servers:
+- url: http://{defaultHost}
+  variables:
+    defaultHost:
+      default: localhost:3000
