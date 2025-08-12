@@ -40,8 +40,8 @@ describe "Game of Life API", type: :request do
       consumes "application/json"
       produces "application/json"
       description <<~DESC
-        Creates a new board from an initial 2D array state.
-        This endpoint initiates a background job to calculate the board's evolution.
+        Creates a new board from an initial 2D array state. If a board with the same state already exists, it returns the existing board's data.
+        Otherwise, it creates a new board and initiates a background job to calculate its evolution.
         The status of the calculation can be tracked via the `status_url` returned.
       DESC
 
@@ -79,6 +79,24 @@ describe "Game of Life API", type: :request do
           },
           required: %w[id status_url]
         run_test!
+      end
+
+      response "200", "board already exists" do
+        let(:existing_board_state) { [[0, 1, 0], [1, 0, 1], [0, 1, 0]] }
+        let!(:existing_board) { create(:board, state: existing_board_state) }
+        let(:board) { {board: {state: existing_board_state}} }
+
+        schema type: :object,
+          properties: {
+            id: {type: :integer},
+            status_url: {type: :string, format: :uri}
+          },
+          required: %w[id status_url]
+
+        run_test! do |response|
+          json_response = JSON.parse(response.body)
+          expect(json_response["id"]).to eq(existing_board.id)
+        end
       end
 
       response "422", "invalid request" do

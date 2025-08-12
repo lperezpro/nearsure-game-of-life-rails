@@ -54,8 +54,8 @@ paths:
       tags:
       - Boards
       description: |
-        Creates a new board from an initial 2D array state.
-        This endpoint initiates a background job to calculate the board's evolution.
+        Creates a new board from an initial 2D array state. If a board with the same state already exists, it returns the existing board's data.
+        Otherwise, it creates a new board and initiates a background job to calculate its evolution.
         The status of the calculation can be tracked via the `status_url` returned.
       parameters: []
       responses:
@@ -72,6 +72,21 @@ paths:
                     type: string
                     format: uri
                     example: "/api/v1/boards/1"
+                required:
+                - id
+                - status_url
+        '200':
+          description: board already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  status_url:
+                    type: string
+                    format: uri
                 required:
                 - id
                 - status_url

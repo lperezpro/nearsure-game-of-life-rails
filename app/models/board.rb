@@ -10,6 +10,10 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
+# Indexes
+#
+#  index_boards_on_state  (state) UNIQUE
+#
 class Board < ApplicationRecord
   # --- Associations ---
   has_many :steps, -> { order(number: :asc) }, dependent: :destroy, inverse_of: :board
@@ -26,6 +30,7 @@ class Board < ApplicationRecord
 
   # --- Validations ---
   validates :state, presence: true
+  validates :state, uniqueness: true
   validate :validate_state_is_an_array_of_arrays
 
   private

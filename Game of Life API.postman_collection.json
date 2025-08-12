@@ -53,9 +53,87 @@
 								"v1",
 								"boards"
 							]
+						},
+						"description": "Creates a new board from a 2D array state. If a board with the same state already exists, it returns the existing board's data (200 OK). Otherwise, it creates a new board (201 Created) and returns its ID and status URL."
+					},
+					"response": [
+						{
+							"name": "Board Created Successfully",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"board\": {\n        \"state\": [\n            [0, 1, 0],\n            [0, 1, 0],\n            [0, 1, 0]\n        ]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/boards",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"boards"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"status_url\": \"/api/v1/boards/1\"\n}"
+						},
+						{
+							"name": "Board Already Exists",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"board\": {\n        \"state\": [\n            [0, 1, 0],\n            [0, 1, 0],\n            [0, 1, 0]\n        ]\n    }\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/v1/boards",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"boards"
+									]
 						}
 					},
-					"response": []
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": 1,\n    \"status_url\": \"/api/v1/boards/1\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Show board status",

@@ -8,7 +8,9 @@ RSpec.describe "Api::V1::Boards", type: :request do
 
   describe "GET /api/v1/boards" do
     it "returns a list of all boards" do
-      create_list(:board, 3)
+      create(:board, :block)
+      create(:board, :beacon)
+      create(:board, :toad)
       get api_v1_boards_path, as: :json
       expect(response).to have_http_status(:ok)
       json_response = response.parsed_body
@@ -21,11 +23,7 @@ RSpec.describe "Api::V1::Boards", type: :request do
       let(:valid_attributes) do
         {
           board: {
-            state: [
-              [0, 1, 0],
-              [0, 1, 0],
-              [0, 1, 0]
-            ]
+            state: attributes_for(:board, :glider)[:state]
           }
         }
       end
@@ -43,6 +41,24 @@ RSpec.describe "Api::V1::Boards", type: :request do
         board = Board.last
         expect(json_response["id"]).to eq(board.id)
         expect(json_response["status_url"]).to eq(api_v1_board_url(board))
+      end
+
+      context "when a board with the same state already exists" do
+        let!(:existing_board) { create(:board, state: valid_attributes[:board][:state]) }
+
+        it "does not create a new Board" do
+          expect do
+            post api_v1_boards_path, params: valid_attributes, as: :json
+          end.not_to change(Board, :count)
+        end
+
+        it "returns the existing board's data" do
+          post api_v1_boards_path, params: valid_attributes, as: :json
+          expect(response).to have_http_status(:ok)
+          json_response = response.parsed_body
+          expect(json_response["id"]).to eq(existing_board.id)
+          expect(json_response["status_url"]).to eq(api_v1_board_url(existing_board))
+        end
       end
     end
 
@@ -63,10 +79,10 @@ RSpec.describe "Api::V1::Boards", type: :request do
   end
 
   describe "GET /api/v1/boards/:id" do
-    let(:board) { create(:board) }
+    let(:board) { create(:board, :glider) }
 
     it "returns the board status" do
-      get api_v1_board_path(board)
+      get api_v1_board_path(board), as: :json
       expect(response).to have_http_status(:ok)
       json_response = response.parsed_body
       expect(json_response["id"]).to eq(board.id)

@@ -28,16 +28,23 @@ module Api
 
       # POST /api/v1/boards
       # Creates a new board. Expects a 'state' parameter, which is a 2D array of 0s and 1s.
+      # If a board with the same state already exists, it returns the existing board's data.
       # On success, returns 201 Created with the new board's ID.
       # On failure, returns 422 Unprocessable Content with validation errors.
       def create
+        existing_board = Board.where("state::jsonb = ?", board_params[:state].to_json).first
+        if existing_board
+          render json: {id: existing_board.id, status_url: api_v1_board_url(existing_board)}, status: :ok
+          return
+        end
+
         @board = Board.new(board_params)
         if @board.save
           # Enqueue the background job to calculate the evolution
           BoardEvolutionJob.perform_later(@board.id)
           render json: {id: @board.id, status_url: api_v1_board_url(@board)}, status: :created
         else
-          render json: {errors: @board.errors.full_messages}, status: :unprocessable_entity
+          render json: {errors: @board.errors.full_messages}, status: :unprocessable_content
         end
       end
 

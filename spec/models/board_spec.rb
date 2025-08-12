@@ -10,6 +10,10 @@
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
+# Indexes
+#
+#  index_boards_on_state  (state) UNIQUE
+#
 require "rails_helper"
 
 RSpec.describe Board, type: :model do
@@ -44,6 +48,13 @@ RSpec.describe Board, type: :model do
         board = Board.new(state: [[0, 1], [2, 0]])
         expect(board).not_to be_valid
         expect(board.errors[:state]).to include("must only contain 0s and 1s")
+      end
+
+      it "is invalid when state is not unique" do
+        existing_board = create(:board)
+        board = Board.new(state: existing_board.state)
+        expect(board).not_to be_valid
+        expect(board.errors[:state]).to include("has already been taken")
       end
     end
   end

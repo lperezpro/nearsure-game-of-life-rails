@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_12_114846) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_12_172501) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_12_114846) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.enum "status", default: "processing", null: false, enum_type: "board_status"
+    t.index ["state"], name: "index_boards_on_state", unique: true
   end
 
   create_table "steps", force: :cascade do |t|

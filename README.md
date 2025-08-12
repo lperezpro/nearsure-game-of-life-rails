@@ -102,7 +102,7 @@ The base URL is `http://localhost:3000`.
 
 | Method | Endpoint | Description                                                                                                                                             |
 | :--- | :--- |:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POST` | `/api/v1/boards` | Creates a new board. The body should be a JSON object with a `state` key containing a 2D array of 0s and 1s. Returns the new board's `id`.              |
+| `POST` | `/api/v1/boards` | Creates a new board from a 2D array state. If a board with the same state already exists, it returns the existing board's data (`200 OK`). Otherwise, it creates a new board (`201 Created`). Returns the board's `id` and `status_url`. |
 | `GET` | `/api/v1/boards` | Returns a list of all existing boards.                                                                                                                  |
 | `GET` | `/api/v1/boards/:id` | Returns the specified board status.                                                                                                                     |
 | `DELETE` | `/api/v1/boards/:id` | Deletes the specified board.                                                                                                                            |
@@ -139,7 +139,8 @@ Deprecated endpoints are also available for backward compatibility:
 **Response:** `201 Created`
 ```json
 {
-    "id": 1
+    "id": 1,
+    "status_url": "/api/v1/boards/1"
 }
 ```
 
