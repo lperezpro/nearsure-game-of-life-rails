@@ -1,175 +1,244 @@
 {
 	"info": {
-		"_postman_id": "f6155b8f-7f30-4c52-9e56-12c5f5f1f108",
+		"_postman_id": "604a3424-2cb6-44a9-8b0f-7b63b3b93c86",
 		"name": "Game of Life API",
-		"description": "A collection to test the Game of Life Rails API.",
+		"description": "A collection of requests for the Conway's Game of Life API.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "37922753"
 	},
 	"item": [
 		{
-			"name": "List All Boards",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/boards",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"boards"
-					]
-				},
-				"description": "Returns a list of all boards currently stored in the database."
-			},
-			"response": []
-		},
-		{
-			"name": "Create Board",
-			"event": [
+			"name": "Boards",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var jsonData = pm.response.json();",
-							"pm.collectionVariables.set(\"boardId\", jsonData.id);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"board\": {\n        \"state\": [\n            [0, 0, 0, 0, 0],\n            [0, 0, 1, 0, 0],\n            [0, 0, 1, 0, 0],\n            [0, 0, 1, 0, 0],\n            [0, 0, 0, 0, 0]\n        ]\n    }\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+					"name": "List all boards",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/boards",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"boards"
-					]
+				{
+					"name": "Create a board",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"board\": {\n        \"state\": [\n            [0, 1, 0],\n            [0, 1, 0],\n            [0, 1, 0]\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards"
+							]
+						}
+					},
+					"response": []
 				},
-				"description": "Creates a new board with the provided state. The ID of the created board is automatically saved to the `boardId` collection variable for use in other requests."
-			},
-			"response": []
+				{
+					"name": "Show board status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a board",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a specific step",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards/:id/step/:number",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards",
+								":id",
+								"step",
+								":number"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "number",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "Get Next State",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/boards/{{boardId}}/next",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"boards",
-						"{{boardId}}",
-						"next"
-					]
+			"name": "Boards (Deprecated)",
+			"item": [
+				{
+					"name": "Get next state (step 1)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards/:id/next",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards",
+								":id",
+								"next"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
 				},
-				"description": "Returns the next state (one generation) for the board specified by `boardId`."
-			},
-			"response": []
-		},
-		{
-			"name": "Get State After N Steps",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/boards/{{boardId}}/steps/2",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"boards",
-						"{{boardId}}",
-						"steps",
-						"2"
-					]
+				{
+					"name": "Get state after N steps",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards/:id/steps/:n",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards",
+								":id",
+								"steps",
+								":n"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "n",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
 				},
-				"description": "Returns the board state after 'n' generations. You can change the number of steps in the URL."
-			},
-			"response": []
-		},
-		{
-			"name": "Get Final State",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/boards/{{boardId}}/final",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"boards",
-						"{{boardId}}",
-						"final"
-					]
-				},
-				"description": "Attempts to find a stable or oscillating final state for the board specified by `boardId`."
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Board",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{baseUrl}}/api/v1/boards/{{boardId}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"api",
-						"v1",
-						"boards",
-						"{{boardId}}"
-					]
-				},
-				"description": "Deletes the board specified by `boardId`."
-			},
-			"response": []
+				{
+					"name": "Get final state",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/boards/:id/final",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"boards",
+								":id",
+								"final"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"variable": [
 		{
 			"key": "baseUrl",
 			"value": "http://localhost:3000"
-		},
-		{
-			"key": "boardId",
-			"value": "1"
 		}
 	]
 }

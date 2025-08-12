@@ -6,6 +6,7 @@
 #
 #  id         :bigint           not null, primary key
 #  state      :jsonb            not null
+#  status     :enum             default("processing"), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #

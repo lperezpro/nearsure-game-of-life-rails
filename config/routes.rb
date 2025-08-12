@@ -11,11 +11,12 @@ Rails.application.routes.draw do
   # root "posts#index"
   namespace :api do
     namespace :v1 do
-      resources :boards, only: [:index, :create, :destroy] do
+      resources :boards, only: [:index, :create, :show, :destroy] do
         member do
           get "next", to: "boards#next_state"
           get "steps/:n", to: "boards#steps_away", as: :steps
           get "final", to: "boards#final_state"
+          get "step/:number", to: "boards#show_step", as: :step
         end
       end
     end

@@ -10,7 +10,8 @@ paths:
       summary: Lists all boards
       tags:
       - Boards
-      description: Returns a list of all boards currently stored in the database.
+      description: Returns a list of all boards currently stored in the database,
+        including their current state and evolution status.
       responses:
         '200':
           description: successful
@@ -29,6 +30,13 @@ paths:
                         type: array
                         items:
                           type: integer
+                    status:
+                      type: string
+                      enum:
+                      - processing
+                      - stable
+                      - oscillating
+                      - max_attempts_reached
                     created_at:
                       type: string
                       format: date-time
@@ -38,14 +46,17 @@ paths:
                   required:
                   - id
                   - state
+                  - status
                   - created_at
                   - updated_at
     post:
       summary: Creates a board
       tags:
       - Boards
-      description: Creates a new board. Expects a 'state' parameter, which is a 2D
-        array of 0s and 1s.
+      description: |
+        Creates a new board from an initial 2D array state.
+        This endpoint initiates a background job to calculate the board's evolution.
+        The status of the calculation can be tracked via the `status_url` returned.
       parameters: []
       responses:
         '201':
@@ -57,8 +68,13 @@ paths:
                 properties:
                   id:
                     type: integer
+                  status_url:
+                    type: string
+                    format: uri
+                    example: "/api/v1/boards/1"
                 required:
                 - id
+                - status_url
         '422':
           description: invalid request
           content:
@@ -110,16 +126,97 @@ paths:
       required: true
       schema:
         type: string
+    get:
+      summary: Shows board status
+      tags:
+      - Boards
+      description: Shows the current status of the board's evolution, including whether
+        it's still calculating or finished, and the total number of steps calculated
+        so far.
+      responses:
+        '200':
+          description: board status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  state:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: integer
+                  status:
+                    type: string
+                    enum:
+                    - processing
+                    - stable
+                    - oscillating
+                    - max_attempts_reached
+                  total_steps_calculated:
+                    type: integer
+                required:
+                - id
+                - state
+                - status
+                - total_steps_calculated
+        '404':
+          description: board not found
     delete:
       summary: Deletes a board
       tags:
       - Boards
-      description: Deletes the board specified by ID.
+      description: Deletes the board specified by ID and all of its associated step
+        data.
       responses:
         '204':
           description: board deleted
         '404':
           description: board not found
+  "/api/v1/boards/{id}/step/{number}":
+    parameters:
+    - name: id
+      in: path
+      description: Board ID
+      required: true
+      schema:
+        type: string
+    - name: number
+      in: path
+      description: Step number (generation)
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: Retrieves a specific step
+      tags:
+      - Boards
+      description: Retrieves a previously calculated board state for a specific step
+        number. Step 0 is the initial state.
+      responses:
+        '200':
+          description: step found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  step:
+                    type: integer
+                  state:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: integer
+                required:
+                - step
+                - state
+        '404':
+          description: step not found
   "/api/v1/boards/{id}/next":
     parameters:
     - name: id
@@ -129,11 +226,13 @@ paths:
       schema:
         type: string
     get:
-      summary: Calculates the next state
+      summary: Gets the next state (step 1)
       tags:
-      - Boards
-      description: Calculates and returns the next single generation for the specified
-        board.
+      - Boards (Deprecated)
+      description: |
+        **Deprecated:** Use `GET /api/v1/boards/{id}/step/1` instead.
+
+        Retrieves the state of the board after one generation (step 1).
       responses:
         '200':
           description: next state returned
@@ -142,6 +241,9 @@ paths:
               schema:
                 type: object
                 properties:
+                  step:
+                    type: integer
+                    example: 1
                   state:
                     type: array
                     items:
@@ -149,7 +251,7 @@ paths:
                       items:
                         type: integer
         '404':
-          description: board not found
+          description: board or step not found
   "/api/v1/boards/{id}/steps/{n}":
     parameters:
     - name: id
@@ -165,10 +267,13 @@ paths:
       schema:
         type: integer
     get:
-      summary: Calculates state after N steps
+      summary: Gets state after N steps
       tags:
-      - Boards
-      description: Calculates the state of the board after 'n' generations.
+      - Boards (Deprecated)
+      description: |
+        **Deprecated:** Use `GET /api/v1/boards/{id}/step/{n}` instead.
+
+        Retrieves the state of the board after 'n' generations.
       responses:
         '200':
           description: state after n steps returned
@@ -177,16 +282,17 @@ paths:
               schema:
                 type: object
                 properties:
+                  step:
+                    type: integer
+                    example: 2
                   state:
                     type: array
                     items:
                       type: array
                       items:
                         type: integer
-        '400':
-          description: bad request
         '404':
-          description: board not found
+          description: board or step not found
   "/api/v1/boards/{id}/final":
     parameters:
     - name: id
@@ -196,11 +302,14 @@ paths:
       schema:
         type: string
     get:
-      summary: Calculates the final state
+      summary: Gets the final state
       tags:
-      - Boards
-      description: Attempts to find a final state for the board, which can be either
-        stable or oscillating.
+      - Boards (Deprecated)
+      description: |
+        **Deprecated:** Check the `status` on the main board endpoint `GET /api/v1/boards/{id}` instead.
+
+        Returns the final state of the board if the calculation is complete.
+        If the calculation is ongoing, it returns a status indicating it's still processing.
       responses:
         '200':
           description: final state returned
@@ -209,19 +318,32 @@ paths:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: string
+                    enum:
+                    - stable
+                    - oscillating
+                    - max_attempts_reached
+                  final_step:
+                    type: integer
                   state:
                     type: array
                     items:
                       type: array
                       items:
                         type: integer
+        '202':
+          description: processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   status:
                     type: string
-                    enum:
-                    - stable
-                    - oscillating
-        '422':
-          description: final state not found
+                    example: processing
+                  message:
+                    type: string
         '404':
           description: board not found
 servers:

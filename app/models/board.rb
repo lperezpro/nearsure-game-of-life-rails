@@ -6,10 +6,25 @@
 #
 #  id         :bigint           not null, primary key
 #  state      :jsonb            not null
+#  status     :enum             default("processing"), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #
 class Board < ApplicationRecord
+  # --- Associations ---
+  has_many :steps, -> { order(number: :asc) }, dependent: :destroy, inverse_of: :board
+
+  # --- Enums ---
+  enum :status,
+    {
+      processing: "processing",
+      stable: "stable",
+      oscillating: "oscillating",
+      max_attempts_reached: "max_attempts_reached"
+    },
+    prefix: true
+
+  # --- Validations ---
   validates :state, presence: true
   validate :validate_state_is_an_array_of_arrays
 
